@@ -1,0 +1,46 @@
+1-What columns violate 1NF?
+ -food_code and food_description violate 1NF because they contain multiple values in a single cell (e.g., "C1, C2" and "Curry, Cake").
+ -The date formats in dinner_date are inconsistent, which could also be considered a violation, although this is more about data integrity than strict 1NF compliance.
+
+2-What entities do you recognize that could be extracted?
+ -Members: Represented by member_id, member_name, and member_address.
+ -Dinners: Represented by dinner_id and dinner_date.
+ -Venues: Represented by venue_code and venue_description.
+ -Foods: Represented by food_code and food_description.
+ -Attendance: Tracks which members attended which dinners.
+ -Dinner-Food Relationship: Tracks which foods were served at each dinner.
+
+3-Name all the tables and columns that would make a 3NF compliant solution?
+ 1. Members Table
+
+member_id	(Primary Key)
+member_name	
+member_address	
+
+ 2.Dinners Table
+
+dinner_id	(Primary Key)
+dinner_date
+venue_code	(Foreign Key (references Venues))
+
+ 3. Venues Table
+
+venue_code	(Primary Key)
+venue_description	
+
+ 4. Foods Table
+
+food_code	(Primary Key)
+food_description
+
+ 5. Attendance Table
+
+attendance_id	(Primary Key)
+member_id	Foreign Key (references Members)
+dinner_id	Foreign Key (references Dinners)
+
+ 6. Dinner-Food Relationship Table
+
+relationship_id	(Primary Key)
+dinner_id	Foreign Key (references Dinners)
+food_code	Foreign Key (references Foods)
