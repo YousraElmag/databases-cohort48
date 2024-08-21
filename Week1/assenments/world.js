@@ -15,7 +15,7 @@ connection.connect(err => {
   }
   console.log('Connected to the database as ID', connection.threadId);
 
-  
+
   const queries = {
     countriesWithPopulationOver8M: `
       SELECT Name FROM country WHERE Population > 8000000;
@@ -49,7 +49,7 @@ connection.connect(err => {
     `
   };
 
-  
+
   for (const [queryName, query] of Object.entries(queries)) {
     connection.query(query, (err, results) => {
       if (err) {
