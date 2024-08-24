@@ -7,7 +7,7 @@ const { seedDatabase } = require('./seedDatabase.js');
 
 // Function to create an episode
 async function createEpisodeExercise(client) {
-  const db = client.db(process.env.DB_NAME);
+  const db = client.db(); // The database is already specified in the URI
   const collection = db.collection('bob_ross_episodes');
 
   const result = await collection.insertOne({
@@ -24,7 +24,7 @@ async function createEpisodeExercise(client) {
 
 // Function to find episodes and display information
 async function findEpisodesExercises(client) {
-  const db = client.db(process.env.DB_NAME);
+  const db = client.db(); // The database is already specified in the URI
   const collection = db.collection('bob_ross_episodes');
 
   // Find the title of episode 2 in season 2
@@ -50,7 +50,7 @@ async function findEpisodesExercises(client) {
 
 // Function to update episodes
 async function updateEpisodeExercises(client) {
-  const db = client.db(process.env.DB_NAME);
+  const db = client.db(); // The database is already specified in the URI
   const collection = db.collection('bob_ross_episodes');
 
   // Update episode 13 in season 30 from BLUE RIDGE FALLERS to BLUE RIDGE FALLS
@@ -71,34 +71,28 @@ async function updateEpisodeExercises(client) {
 
 // Function to delete a specific episode
 async function deleteEpisodeExercise(client) {
-  const db = client.db(process.env.DB_NAME);
+  const db = client.db(); // The database is already specified in the URI
   const collection = db.collection('bob_ross_episodes');
 
   // Define the query to find episode 14 in season 31
   const query = { episode: 'S31E14' };
 
-
   const deleteResult = await collection.deleteOne(query);
   console.log(`Ran a command to delete episode and it deleted ${deleteResult.deletedCount} episodes`);
 }
 
-
 async function main() {
-  
-  if (!process.env.DB_URI || !process.env.DB_NAME) {
-    console.error('Environment variables are not set up correctly.');
-    console.error('DB_URI:', process.env.DB_URI);
-    console.error('DB_NAME:', process.env.DB_NAME);
-    throw new Error('You did not set up the environment variables correctly.');
+  if (!process.env.MONGODB_URL) {
+    console.error('Environment variable MONGODB_URL is not set up correctly.');
+    console.error('MONGODB_URL:', process.env.MONGODB_URL);
+    throw new Error('You did not set up the environment variable MONGODB_URL correctly.');
   }
 
- 
-  const client = new MongoClient(process.env.DB_URI, {
+  const client = new MongoClient(process.env.MONGODB_URL, {
     serverApi: ServerApiVersion.v1,
   });
 
   try {
-  
     await client.connect();
     await seedDatabase(client);
     await createEpisodeExercise(client);
@@ -108,10 +102,8 @@ async function main() {
   } catch (err) {
     console.error(err);
   } finally {
-  
     await client.close();
   }
 }
-
 
 main();
