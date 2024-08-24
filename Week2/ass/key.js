@@ -10,7 +10,7 @@ const pool = mysql.createPool({
 async function createTable() {
     try {
         const [table] = await pool.query(`
-          CREATE TABLE IF NOT EXISTS authors (
+            CREATE TABLE IF NOT EXISTS authors (
                 author_id INT PRIMARY KEY AUTO_INCREMENT, 
                 author_name VARCHAR(255),
                 university VARCHAR(255),
@@ -27,11 +27,39 @@ async function createTable() {
 
 async function addColumn() {
     try {
-        const [column] = await pool.query(`
-            ALTER TABLE authors 
-            ADD COLUMN mentor INT;
+        const [rows] = await pool.query(`
+            SELECT COLUMN_NAME 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'authors' 
+            AND COLUMN_NAME = 'mentor';
         `);
-        return column;
+
+        if (rows.length === 0) {
+            await pool.query(`
+                ALTER TABLE authors 
+                ADD COLUMN mentor INT;
+            `);
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function dropForeignKeyIfExists() {
+    try {
+        const [rows] = await pool.query(`
+            SELECT CONSTRAINT_NAME 
+            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+            WHERE TABLE_NAME = 'authors' 
+            AND CONSTRAINT_NAME = 'fk_mentor';
+        `);
+
+        if (rows.length > 0) {
+            await pool.query(`
+                ALTER TABLE authors
+                DROP FOREIGN KEY fk_mentor;
+            `);
+        }
     } catch (error) {
         throw error;
     }
@@ -39,16 +67,28 @@ async function addColumn() {
 
 async function addForeignKey() {
     try {
-        const [key] = await pool.query(`
+        await pool.query(`
             ALTER TABLE authors
             ADD CONSTRAINT fk_mentor
             FOREIGN KEY (mentor) REFERENCES authors(author_id);
         `);
-        return key;
     } catch (error) {
-        throw error;
+        if (error.code !== 'ER_FK_DUP_NAME') {
+            throw error;
+        }
     }
 }
-addForeignKey()
-createTable()
-addColumn()
+
+async function main() {
+    try {
+        await createTable(); 
+        await addColumn(); 
+        await dropForeignKeyIfExists(); 
+        await addForeignKey(); 
+        console.log("Table and foreign key setup successfully!");
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+main();
