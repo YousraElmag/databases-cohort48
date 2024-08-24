@@ -25,66 +25,47 @@ async function createTable() {
     }
 }
 
+
+async function columnExists(tableName, columnName) {
+    const [rows] = await pool.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_NAME = ? AND COLUMN_NAME = ?
+    `, [tableName, columnName]);
+    return rows.length > 0;
+}
+
 async function addColumn() {
     try {
-        const [rows] = await pool.query(`
-            SELECT COLUMN_NAME 
-            FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE TABLE_NAME = 'authors' 
-            AND COLUMN_NAME = 'mentor';
-        `);
-
-        if (rows.length === 0) {
-            await pool.query(`
-                ALTER TABLE authors 
-                ADD COLUMN mentor INT;
-            `);
-        }
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function dropForeignKeyIfExists() {
-    try {
-        const [rows] = await pool.query(`
-            SELECT CONSTRAINT_NAME 
-            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-            WHERE TABLE_NAME = 'authors' 
-            AND CONSTRAINT_NAME = 'fk_mentor';
-        `);
-
-        if (rows.length > 0) {
-            await pool.query(`
+        // Check if the column exists
+        if (!(await columnExists('authors', 'mentor'))) {
+            // Add the new column
+            const [result] = await pool.query(`
                 ALTER TABLE authors
-                DROP FOREIGN KEY fk_mentor;
+                ADD COLUMN mentor INT;
+                ADD CONSTRAINT fk_mentor FOREIGN KEY (mentor) REFERENCES authors(author_id);
+
             `);
+            console.log('Column "mentor" added successfully.');
+            return result;
+        } else {
+            console.log('Column "mentor" already exists.');
         }
     } catch (error) {
+        console.error('Error adding column:', error);
         throw error;
     }
 }
 
-async function addForeignKey() {
-    try {
-        await pool.query(`
-            ALTER TABLE authors
-            ADD CONSTRAINT fk_mentor
-            FOREIGN KEY (mentor) REFERENCES authors(author_id);
-        `);
-    } catch (error) {
-        if (error.code !== 'ER_FK_DUP_NAME') {
-            throw error;
-        }
-    }
-}
+
+
+
 
 async function main() {
     try {
         await createTable(); 
         await addColumn(); 
-        await dropForeignKeyIfExists(); 
-        await addForeignKey(); 
+      
         console.log("Table and foreign key setup successfully!");
     } catch (error) {
         console.error("Error:", error);

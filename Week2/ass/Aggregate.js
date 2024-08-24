@@ -32,7 +32,7 @@ async function sumPapersByFemaleAuthors() {
                 SELECT COUNT(ap.paper_id) AS paper_count
                 FROM authors a
                 LEFT JOIN author_papers ap ON a.author_id = ap.author_id
-                WHERE a.gender = 'F'
+                WHERE a.gender = 'female'
                 GROUP BY a.author_id
             ) AS paper_counts;
         `);

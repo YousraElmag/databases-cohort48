@@ -10,7 +10,7 @@ const pool = mysql.createPool({
 async function createResearchPapersTable() {
     try {
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS research_Papers (
+            CREATE TABLE IF NOT EXISTS research_papers (
                 paper_id INT PRIMARY KEY AUTO_INCREMENT,
                 paper_title VARCHAR(255),
                 conference VARCHAR(255),
