@@ -4,4 +4,7 @@ node_modules/
 **/*-secret.json
 **/*.sh
 .idea
-.env
+*.env
+Week1/
+Week2/
+Week3/
