@@ -37,5 +37,18 @@ async function creatrelation (){
         throw error
     }
 }
-createResearchPapersTable()
-creatrelation()
+
+
+async function main() {
+    try {
+        await createResearchPapersTable();
+        await creatrelation();
+    } catch (error) {
+        console.error("Error:", error);
+    } finally {
+        await pool.end();
+        console.log("Database connection closed.");
+    }
+}
+
+main();
