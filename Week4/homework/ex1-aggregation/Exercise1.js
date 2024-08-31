@@ -20,7 +20,7 @@ const populationSchema = new mongoose.Schema({
 const Population = mongoose.model('Population', populationSchema);
 
 // Path to the CSV file
-const csvFilePath = '/Users/yousraelmaghraby/databases-cohort48/Week4/homework/ex1-aggregation/population_pyramid_1950-2022.csv';
+const csvFilePath = '../databases-cohort48/Week4/homework/ex1-aggregation/population_pyramid_1950-2022.csv';
 
 // Function to connect to MongoDB
 async function connectToMongoDB() {
