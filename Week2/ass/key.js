@@ -53,6 +53,7 @@ async function columnExists(tableName, columnName) {
         SELECT COLUMN_NAME 
         FROM INFORMATION_SCHEMA.COLUMNS 
         WHERE TABLE_NAME = ? AND COLUMN_NAME = ?
+    AND TABLE_SCHEMA = 'my_key'
     `, [tableName, columnName]);
     return rows.length > 0;
 }
