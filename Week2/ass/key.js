@@ -7,9 +7,10 @@ const pool = mysql.createPool({
     database: 'my_key'
 }).promise();
 
-async function createTable() {
+async function createTables() {
     try {
-        const [table] = await pool.query(`
+        // Create authors table
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS authors (
                 author_id INT PRIMARY KEY AUTO_INCREMENT, 
                 author_name VARCHAR(255),
@@ -19,12 +20,33 @@ async function createTable() {
                 gender ENUM('male', 'female', 'other')
             )
         `);
-        return table;
+
+        // Create research_papers table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS research_papers (
+                paper_id INT PRIMARY KEY AUTO_INCREMENT,
+                paper_title VARCHAR(255),
+                conference VARCHAR(255),
+                publish_date DATE
+            )
+        `);
+
+        // Create author_papers junction table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS author_papers (
+                author_id INT,
+                paper_id INT,
+                FOREIGN KEY (author_id) REFERENCES authors(author_id),
+                FOREIGN KEY (paper_id) REFERENCES research_papers(paper_id)
+            )
+        `);
+
+        console.log('Tables created successfully.');
     } catch (error) {
+        console.error('Error creating tables:', error.message);
         throw error;
     }
 }
-
 
 async function columnExists(tableName, columnName) {
     const [rows] = await pool.query(`
@@ -40,19 +62,23 @@ async function addColumn() {
         // Check if the column exists
         if (!(await columnExists('authors', 'mentor'))) {
             // Add the new column
-            const [result] = await pool.query(`
+            await pool.query(`
                 ALTER TABLE authors
-                ADD COLUMN mentor INT;
-                ADD CONSTRAINT fk_mentor FOREIGN KEY (mentor) REFERENCES authors(author_id);
-
+                ADD COLUMN mentor INT
             `);
+
+            // Add foreign key constraint
+            await pool.query(`
+                ALTER TABLE authors
+                ADD CONSTRAINT fk_mentor FOREIGN KEY (mentor) REFERENCES authors(author_id)
+            `);
+
             console.log('Column "mentor" added successfully.');
-            return result;
         } else {
             console.log('Column "mentor" already exists.');
         }
     } catch (error) {
-        console.error('Error adding column:', error);
+        console.error('Error adding column:', error.message);
         throw error;
     }
 }
@@ -159,19 +185,15 @@ async function insertData() {
     }
 }
 
-
-
-
 async function main() {
     try {
-        await createTable(); 
+        await createTables(); 
         await addColumn(); 
-        await insertData()
-      
+        await insertData();
         console.log("Table and foreign key setup successfully!");
     } catch (error) {
         console.error("Error:", error);
-    }finally {
+    } finally {
         await pool.end();
         console.log("Database connection closed.");
     }
